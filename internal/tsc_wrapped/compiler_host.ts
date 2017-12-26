@@ -59,18 +59,15 @@ export class CompilerHost implements ts.CompilerHost, tsickle.TsickleHost {
   options: BazelTsOptions;
   host: ts.ModuleResolutionHost = this;
 
-  constructor(
-      public inputFiles: string[], options: ts.CompilerOptions,
-      readonly bazelOpts: BazelOptions, private delegate: ts.CompilerHost,
-      private fileLoader: FileLoader,
-      private readonly allowNonHermeticReads: boolean,
-      private moduleResolver: ModuleResolver = ts.resolveModuleName) {
+  constructor(public inputFiles: string[], options: ts.CompilerOptions,
+              readonly bazelOpts: BazelOptions,
+              private delegate: ts.CompilerHost, private fileLoader: FileLoader,
+              private readonly allowNonHermeticReads: boolean,
+              private moduleResolver: ModuleResolver = ts.resolveModuleName) {
     this.options = narrowTsOptions(options);
     this.relativeRoots =
         this.options.rootDirs.map(r => path.relative(this.options.rootDir, r));
-    inputFiles.forEach((f) => {
-      this.knownFiles.add(f);
-    });
+    inputFiles.forEach((f) => { this.knownFiles.add(f); });
 
     // getCancelationToken is an optional method on the delegate. If we
     // unconditionally implement the method, we will be forced to return null,
@@ -169,8 +166,8 @@ export class CompilerHost implements ts.CompilerHost, tsickle.TsickleHost {
     // outDir/relativeRoots[i]/path/to/file ->
     // rootDir/relativeRoots[i]/path/to/file
     if (context.startsWith(this.options.outDir)) {
-      context = path.join(
-          this.options.rootDir, path.relative(this.options.outDir, context));
+      context = path.join(this.options.rootDir,
+                          path.relative(this.options.outDir, context));
     }
 
     // Try to get the resolved path name from TS compiler host which can
@@ -217,9 +214,8 @@ export class CompilerHost implements ts.CompilerHost, tsickle.TsickleHost {
     // See goog.VALID_MODULE_RE_ in Closure's base.js for characters supported
     // by google.module.
 
-    const escape = (c: string) => {
-      return '$' + c.charCodeAt(0).toString(16);
-    };
+    const escape =
+        (c: string) => { return '$' + c.charCodeAt(0).toString(16); };
     const moduleName = importPath.replace(/^[^a-zA-Z_/]/, escape)
                            .replace(/[^a-zA-Z_0-9_/]/g, escape)
                            .replace(/\//g, '.');
@@ -237,7 +233,8 @@ export class CompilerHost implements ts.CompilerHost, tsickle.TsickleHost {
    *  allows a string as the first argument to define()"
    */
   amdModuleName(sf: ts.SourceFile): string|undefined {
-    if (!this.shouldNameModule(sf.fileName)) return undefined;
+    if (!this.shouldNameModule(sf.fileName))
+      return undefined;
     // /build/work/bazel-out/local-fastbuild/bin/path/to/file.ts
     // -> path/to/file.ts
     let fileName = this.rootDirsRelative(sf.fileName);
@@ -264,15 +261,15 @@ export class CompilerHost implements ts.CompilerHost, tsickle.TsickleHost {
   }
 
   /** Loads a source file from disk (or the cache). */
-  getSourceFile(
-      fileName: string, languageVersion: ts.ScriptTarget,
-      onError?: (message: string) => void) {
+  getSourceFile(fileName: string, languageVersion: ts.ScriptTarget,
+                onError?: (message: string) => void) {
     return perfTrace.wrap(`getSourceFile ${fileName}`, () => {
       const sf = this.fileLoader.loadFile(fileName, fileName, languageVersion);
       if (this.options.module === ts.ModuleKind.AMD ||
           this.options.module === ts.ModuleKind.UMD) {
         const moduleName = this.amdModuleName(sf);
-        if (sf.moduleName === moduleName || !moduleName) return sf;
+        if (sf.moduleName === moduleName || !moduleName)
+          return sf;
         if (sf.moduleName) {
           throw new Error(
               `ERROR: ${sf.fileName} ` +
@@ -288,20 +285,18 @@ export class CompilerHost implements ts.CompilerHost, tsickle.TsickleHost {
     });
   }
 
-  writeFile(
-      fileName: string, content: string, writeByteOrderMark: boolean,
-      onError: ((message: string) => void)|undefined,
-      sourceFiles: ReadonlyArray<ts.SourceFile>): void {
-    perfTrace.wrap(
-        `writeFile ${fileName}`,
-        () => this.writeFileImpl(
-            fileName, content, writeByteOrderMark, onError, sourceFiles || []));
+  writeFile(fileName: string, content: string, writeByteOrderMark: boolean,
+            onError: ((message: string) => void)|undefined,
+            sourceFiles: ReadonlyArray<ts.SourceFile>): void {
+    perfTrace.wrap(`writeFile ${fileName}`,
+                   () =>
+                       this.writeFileImpl(fileName, content, writeByteOrderMark,
+                                          onError, sourceFiles || []));
   }
 
-  writeFileImpl(
-      fileName: string, content: string, writeByteOrderMark: boolean,
-      onError: ((message: string) => void)|undefined,
-      sourceFiles: ReadonlyArray<ts.SourceFile>): void {
+  writeFileImpl(fileName: string, content: string, writeByteOrderMark: boolean,
+                onError: ((message: string) => void)|undefined,
+                sourceFiles: ReadonlyArray<ts.SourceFile>): void {
     // Workaround https://github.com/Microsoft/TypeScript/issues/18648
     if ((this.options.module === ts.ModuleKind.AMD ||
          this.options.module === ts.ModuleKind.UMD) &&
@@ -329,8 +324,8 @@ export class CompilerHost implements ts.CompilerHost, tsickle.TsickleHost {
     // did not change.
     if (!fs.existsSync(fileName) ||
         fs.readFileSync(fileName, 'utf-8') !== content) {
-      this.delegate.writeFile(
-          fileName, content, writeByteOrderMark, onError, sourceFiles);
+      this.delegate.writeFile(fileName, content, writeByteOrderMark, onError,
+                              sourceFiles);
     }
   }
 
@@ -355,7 +350,7 @@ export class CompilerHost implements ts.CompilerHost, tsickle.TsickleHost {
     if (this.bazelOpts.nodeModulesPrefix) {
       return path.join(
           this.bazelOpts.nodeModulesPrefix, 'typescript/lib',
-          ts.getDefaultLibFileName({target: ts.ScriptTarget.ES5}));
+          ts.getDefaultLibFileName({target : ts.ScriptTarget.ES5}));
     }
     return this.delegate.getDefaultLibFileName(options);
   }
@@ -366,31 +361,21 @@ export class CompilerHost implements ts.CompilerHost, tsickle.TsickleHost {
     return this.delegate.getCanonicalFileName(path);
   }
 
-  getCurrentDirectory(): string {
-    return this.delegate.getCurrentDirectory();
-  }
+  getCurrentDirectory(): string { return this.delegate.getCurrentDirectory(); }
 
   useCaseSensitiveFileNames(): boolean {
     return this.delegate.useCaseSensitiveFileNames();
   }
 
-  getNewLine(): string {
-    return this.delegate.getNewLine();
-  }
+  getNewLine(): string { return this.delegate.getNewLine(); }
 
-  getDirectories(path: string) {
-    return this.delegate.getDirectories(path);
-  }
+  getDirectories(path: string) { return this.delegate.getDirectories(path); }
 
   readFile(fileName: string): string|undefined {
     return this.delegate.readFile(fileName);
   }
 
-  trace(s: string): void {
-    console.error(s);
-  }
+  trace(s: string): void { console.error(s); }
 
-  realpath(s: string): string {
-    return ts.sys.realpath!(s);
-  }
+  realpath(s: string): string { return ts.sys.realpath!(s); }
 }
